@@ -1,0 +1,203 @@
+openapi: 3.0.1
+info:
+  version: '1.0'
+  title: Графики
+tags:
+  - name: Шаблоны Графиков
+paths:
+  /charts/api/v1/templates/hierarchy:
+    get:
+      tags:
+        - Список Шаблонов Графиков
+      description: Возвращает иерархический список Шаблонов Графиков и папок.
+      summary: Получить список Шаблонов Графиков и папок.
+      operationId: charts_get_templates_hierarhy
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetHierarchyResponse'
+        '400':
+          description: Bad Request
+        '403':
+          description: Is not allowed
+        '404':
+          description: Not found
+        '500':
+          description: Internal Server Error
+
+    post:
+      tags:
+        - Список Шаблонов Графиков
+      summary: Создать, скопировать узел иерархии
+      description: Создаёт узел иерархии в т.ч. копированием существующего узела
+      operationId: charts_post_hierarchy_node
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNodeRequest'
+      responses:
+        201:
+          description: Created successfully
+        '400':
+          description: Bad Request
+        '403':
+          description: Is not allowed
+        '404':
+          description: Not found
+        '500':
+          description: Internal Server Error
+
+  /charts/api/v1/templates/hierarchy/{nodeId}:
+    patch:
+      tags:
+        - Список Шаблонов Графиков
+      summary: Обновить узел иерархии
+      description: Обновляет узел иерархии
+      operationId: charts_patch_hierarhy_node
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchNodeRequest'
+      responses:
+        204:
+          description: Updated successfully
+        '400':
+          description: Bad Request
+        '403':
+          description: Is not allowed
+        '404':
+          description: Not found
+        '500':
+          description: Internal Server Error
+
+components:
+  schemas:
+    GetHierarchyResponse:
+      description: Массив узлов иерархии списка Шаблонов Графиков
+      type: object
+      properties:
+        hierarchy:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/FolderNodeDto'
+              - $ref: '#/components/schemas/TemplateNodeDto'
+    
+    PatchNodeRequest:
+      $ref: '#/components/schemas/PartialNodeDto'
+
+    CreateNodeRequest:
+      type: object
+      required:
+        - type
+        - title
+        - position
+      allOf: 
+        - $ref: '#/components/schemas/PartialNodeDto'
+      properties: 
+        type:
+          type: string
+          enum: [folder, template]
+        copiedNodeId:
+          description: Идентификатор узла для копирования
+          type: string
+          format: uuid
+
+    PartialNodeDto:
+      type: object
+      properties:
+        title:
+          description: Новое название
+          type: string
+        postion:
+          description: Новая позиция в списке
+          type: object
+          required: 
+            - index
+          properties: 
+            parentId:
+              description: Новый идентификатор родительского узла
+              type: string
+              format: uuid
+            index:
+              description: Новый порядковый номер массиве родителя
+              type: integer
+        
+    BaseNodeDto:
+      type: object
+      required:
+        - id
+        - title
+      properties:
+        id:
+          description: Идентификатор
+          type: string
+          format: uuid
+        parentId:
+          description: Идентификатор родительского узла
+          type: string
+          format: uuid
+        title:
+          description: Название
+          type: string
+        isOwn:
+          description: Признак, что пользователь владелец узла
+          type: boolean
+        
+    FolderNodeDto:
+      description: Папка
+      type: object
+      required:
+        - type
+      allOf:
+        - $ref: '#/components/schemas/BaseNodeDto'
+      properties:
+        type:
+          type: string
+          enum:
+            - folder
+        children:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/FolderNodeDto'
+              - $ref: '#/components/schemas/TemplateNodeDto'
+
+    TemplateNodeDto:
+      description: Шаблон графика
+      type: object
+      required:
+        - type
+        - content
+      allOf:
+        - $ref: '#/components/schemas/BaseNodeDto'
+      properties:
+        type:
+          type: string
+          enum:
+            - template
+        content:
+          description: Ссылка на контент(объект) который можно открыть в системе, по аналогии с Navigation.Host
+          type: object
+          properties:
+            id:
+              description: Идентификатор контента
+              type: string
+              format: uuid
+            type:
+              description: Тип контента
+              type: string
+              enum:
+                - chartTemplate
