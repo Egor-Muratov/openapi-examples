@@ -1,0 +1,558 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "version": "1.0",
+    "title": "Графики ИУС ПТП"
+  },
+  "tags": [
+    {
+      "name": "Графики"
+    }
+  ],
+  "paths": {
+    "/charts/api/v1/timeseries": {
+      "get": {
+        "tags": [
+          "Графики"
+        ],
+        "description": "Возвращает временной ряд из ряда данных за отрезок времени в указанных Единицах измерения.",
+        "summary": "Получить временной ряд из ряда данных.",
+        "parameters": [
+          {
+            "name": "dataSource",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/GetTimeSeriesRequest"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GetTimeSeriesResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Is not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/charts/api/v1/charts/{chartId}/rendering": {
+      "get": {
+        "tags": [
+          "Графики"
+        ],
+        "description": "Возвращает Визуализацию Графика по ИД Графика.",
+        "summary": "Получить Визуализацию сохранённого графика.",
+        "parameters": [
+          {
+            "name": "chartId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "getChartRenderingQuery",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/DataRangeDto"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GetChartRenderingResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Is not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/charts/api/v1/charts/custom/rendering": {
+      "get": {
+        "tags": [
+          "Графики"
+        ],
+        "description": "Возвращает Визуализацию произвольного графика по параметрам линий. Примечание - Для базовой визуализации достаточно одной линии с запоненным источником данных (ИД ряда данных).",
+        "summary": "Получить Визуализацию произвольного графика.",
+        "parameters": [
+          {
+            "name": "getNewChartRenderingRequest",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/GetCustomChartRenderingRequest"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GetChartRenderingResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Is not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GetTimeSeriesRequest": {
+        "description": "Запрос временного ряда для Линии графика",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TimeSeriesDataSourceDto"
+          }
+        ]
+      },
+      "GetTimeSeriesResponse": {
+        "description": "Временной ряд для Линии графика",
+        "type": "object",
+        "required": [
+          "dataSeriesId",
+          "measureUnitId",
+          "timeSeriesTitle",
+          "measureUnitTitle",
+          "startDate",
+          "endDate",
+          "timeInterval",
+          "values"
+        ],
+        "properties": {
+          "dataSeriesId": {
+            "description": "Ид ряда данных",
+            "type": "string",
+            "format": "uuid"
+          },
+          "measureUnitId": {
+            "description": "Ид единиц измерения",
+            "type": "string",
+            "format": "uuid"
+          },
+          "timeSeriesTitle": {
+            "description": "Название временного ряда",
+            "type": "string"
+          },
+          "measureUnitTitle": {
+            "description": "Название единиц измерения",
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeInterval": {
+            "description": "Шаг временного ряда в мс",
+            "type": "integer",
+            "format": "int64"
+          },
+          "values": {
+            "description": "Массив значений временного ряда",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timestamp": {
+                  "description": "UNIX timestamp в мс (возможно стоит убрать и считать на клиенте)",
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "value": {
+                  "type": "string",
+                  "format": "decimal"
+                }
+              }
+            }
+          }
+        }
+      },
+      "DataRangeDto": {
+        "description": "Отрезок времени.",
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GetCustomChartRenderingRequest": {
+        "description": "Запрос данных для визуализации произвольного графика за отрезок времени.",
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/PredefinedLineSettingsDto"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "PredefinedLineSettingsDto": {
+        "description": "Предопределённые Настройки линии графики",
+        "type": "object",
+        "required": [
+          "dataSource"
+        ],
+        "properties": {
+          "visualOptions": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LineVisualOptionsDto"
+              }
+            ]
+          },
+          "dataSource": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TimeSeriesDataSourceDto"
+              }
+            ]
+          }
+        }
+      },
+      "GetChartRenderingResponse": {
+        "description": "Данные для визуализации графика",
+        "type": "object",
+        "required": [
+          "title",
+          "startDate",
+          "endDate",
+          "lines",
+          "yAxes",
+          "xAxes"
+        ],
+        "properties": {
+          "title": {
+            "description": "Название графика",
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/LineDto"
+                }
+              ]
+            }
+          },
+          "yAxes": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/NumericAxisDto"
+                }
+              ]
+            }
+          },
+          "xAxes": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/TimeAxisDto"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "NumericAxisDto": {
+        "description": "Числовая ось графика",
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "minValue",
+          "maxValue"
+        ],
+        "properties": {
+          "id": {
+            "description": "Ид",
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "description": "Название",
+            "type": "string"
+          },
+          "minValue": {
+            "description": "Минимальное значение",
+            "type": "string",
+            "format": "decimal"
+          },
+          "maxValue": {
+            "description": "Максимальное значение",
+            "type": "string",
+            "format": "decimal"
+          }
+        }
+      },
+      "TimeAxisDto": {
+        "description": "Временная ось графика",
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "minValue",
+          "maxValue",
+          "scaleInterval"
+        ],
+        "properties": {
+          "id": {
+            "description": "Ид",
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "description": "Название",
+            "type": "string"
+          },
+          "minValue": {
+            "description": "Минимальное значение",
+            "type": "string",
+            "format": "date-time"
+          },
+          "maxValue": {
+            "description": "Максимальное значение",
+            "type": "string",
+            "format": "date-time"
+          },
+          "scaleInterval": {
+            "description": "Шаг оси в мс",
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "LineDto": {
+        "description": "Линия графика",
+        "type": "object",
+        "required": [
+          "id",
+          "xAxisId",
+          "yAxisId",
+          "visualOptions",
+          "dataSource"
+        ],
+        "properties": {
+          "id": {
+            "description": "Ид линии",
+            "type": "string",
+            "format": "uuid"
+          },
+          "xAxisId": {
+            "description": "Ид оси X",
+            "type": "string",
+            "format": "uuid"
+          },
+          "yAxisId": {
+            "description": "Ид оси Y",
+            "type": "string",
+            "format": "uuid"
+          },
+          "visualOptions": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LineVisualOptionsDto"
+              }
+            ]
+          },
+          "dataSource": {
+            "required": [
+              "measureUnitId",
+              "startDate",
+              "endDate"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TimeSeriesDataSourceDto"
+              }
+            ]
+          }
+        }
+      },
+      "TimeSeriesDataSourceDto": {
+        "description": "Источник данных Временного ряда линии",
+        "type": "object",
+        "required": [
+          "dataSeriesId"
+        ],
+        "properties": {
+          "dataSeriesId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "measureUnitId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LineVisualOptionsDto": {
+        "description": "Визуальные свойства линии",
+        "type": "object",
+        "properties": {
+          "title": {
+            "description": "Название",
+            "type": "string"
+          },
+          "color": {
+            "description": "Цвет",
+            "type": "string"
+          },
+          "markerShape": {
+            "description": "ФормаМаркера",
+            "type": "string",
+            "enum": [
+              "circle",
+              "triangle",
+              "square"
+            ]
+          },
+          "isShowMarkers": {
+            "description": "Показывать маркеры?",
+            "type": "boolean"
+          },
+          "isShowValues": {
+            "description": "Показывать значения?",
+            "type": "boolean"
+          },
+          "isShowExtremes": {
+            "description": "Показывать экстремумы?",
+            "type": "boolean"
+          },
+          "isHidden": {
+            "description": "Линия скрыта?",
+            "type": "boolean"
+          },
+          "valuePosition": {
+            "description": "Положение значения",
+            "type": "string",
+            "enum": [
+              "up",
+              "down",
+              "left",
+              "right"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
