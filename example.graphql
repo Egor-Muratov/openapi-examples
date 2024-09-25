@@ -1,0 +1,213 @@
+schema {
+  query: query_root
+  mutation: mutation_root
+}
+
+"""whether this query should be cached (Hasura Cloud only)"""
+directive @cached(
+  """measured in seconds"""
+  ttl: Int! = 60
+
+  """refresh the cache entry"""
+  refresh: Boolean! = false
+) on QUERY
+
+scalar BigInt
+
+type ChartsApiV1ChartRendering {
+  author: UserDto
+  endDate: String!
+  lines: [LinesListItem]!
+  startDate: String!
+  title: String!
+  xAxes: [XAxesListItem]!
+  yAxes: [YAxesListItem]!
+}
+
+type ChartsApiV1ChartsCustomRendering {
+  endDate: String!
+  lines: [LinesListItem]!
+  startDate: String!
+  title: String!
+  xAxes: [XAxesListItem]!
+  yAxes: [YAxesListItem]!
+}
+
+type ChartsApiV1Timeseries {
+  dataSeriesId: ID!
+  endDate: String!
+  measureUnitId: ID!
+  measureUnitTitle: String!
+  startDate: String!
+  timeInterval: BigInt!
+  timeSeriesTitle: String!
+  values: [ValuesListItem]!
+}
+
+type DataSource {
+  dataSeriesId: ID!
+  endDate: String!
+  measureUnitId: ID!
+  startDate: String!
+}
+
+input DataSource2Input {
+  dataSeriesId: ID!
+  endDate: String
+  measureUnitId: ID
+  startDate: String
+}
+
+input DataSource3Input {
+  dataSeriesId: ID!
+  endDate: String
+  measureUnitId: ID
+  startDate: String
+}
+
+input GetChartRenderingQueryInput {
+  endDate: String
+  startDate: String
+}
+
+input GetNewChartRenderingRequestInput {
+  endDate: String
+  lines: [Lines2ListItemInput]
+  startDate: String
+}
+
+input Lines2ListItemInput {
+  dataSource: DataSource3Input!
+  visualOptions: VisualOptionsInput
+}
+
+type LinesListItem {
+  dataSource: DataSource!
+  id: ID!
+  visualOptions: VisualOptions!
+  xAxisId: ID!
+  yAxisId: ID!
+}
+
+enum MarkerShape {
+  circle
+  square
+  triangle
+}
+
+input SampleInput {
+  password: String!
+  username: String!
+}
+
+type SampleOutput {
+  accessToken: String!
+}
+
+type TemplateDto {
+  createdAt: String
+  id: String
+  name: String
+  ttt: ChartsApiV1ChartRendering
+  updatedAt: String
+  version: Int
+}
+
+type TemplateListResponse {
+  templates: [TemplateDto]
+}
+
+scalar Upload
+
+input UploadTemplateRequestInput {
+  file: Upload!
+  name: String!
+}
+
+type UploadTemplateResponse {
+  createdAt: String
+  id: String
+  name: String
+  version: Int
+}
+
+type UserDto {
+  id: ID!
+  title: String!
+}
+
+enum ValuePosition {
+  down
+  left
+  right
+  up
+}
+
+type ValuesListItem {
+  timestamp: BigInt
+  value: String
+}
+
+type VisualOptions {
+  color: String
+  isHidden: Boolean
+  isShowExtremes: Boolean
+  isShowMarkers: Boolean
+  isShowValues: Boolean
+  markerShape: MarkerShape
+  title: String
+  valuePosition: ValuePosition
+}
+
+input VisualOptionsInput {
+  color: String
+  isHidden: Boolean
+  isShowExtremes: Boolean
+  isShowMarkers: Boolean
+  isShowValues: Boolean
+  markerShape: MarkerShape
+  title: String
+  valuePosition: ValuePosition
+}
+
+type XAxesListItem {
+  id: ID!
+  maxValue: String!
+  minValue: String!
+  scaleInterval: BigInt!
+  title: String!
+}
+
+type YAxesListItem {
+  id: ID!
+  maxValue: String!
+  minValue: String!
+  title: String!
+}
+
+"""mutation root"""
+type mutation_root {
+  deleteTemplate(id: String!): String!
+  uploadTemplate(uploadTemplateRequestInput: UploadTemplateRequestInput!): UploadTemplateResponse
+}
+
+type query_root {
+  """test"""
+  actionName(arg1: SampleInput!): SampleOutput
+
+  """Возвращает Визуализацию Графика по ИД Графика."""
+  getChartsApiV1ChartsChartIdRendering(chartId: ID!, getChartRenderingQuery: GetChartRenderingQueryInput!): ChartsApiV1ChartRendering
+
+  """
+  Возвращает Визуализацию произвольного графика по параметрам линий. Примечание - Для базовой визуализации достаточно одной линии с запоненным источником данных (ИД ряда данных).
+  """
+  getChartsApiV1ChartsCustomRendering(getNewChartRenderingRequest: GetNewChartRenderingRequestInput): ChartsApiV1ChartsCustomRendering
+
+  """
+  Возвращает временной ряд из ряда данных за отрезок времени в указанных Единицах измерения.
+  """
+  getChartsApiV1Timeseries(dataSource: DataSource2Input!): ChartsApiV1Timeseries
+  getTemplateAsHtml(id: String!): String!
+  getTemplates: TemplateListResponse
+}
+
