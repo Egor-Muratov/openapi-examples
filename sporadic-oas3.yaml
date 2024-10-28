@@ -1,0 +1,393 @@
+openapi: 3.0.0
+info:
+  title: Sporadic Microservice API
+  description: API для управления спорадическими рядами данных и спорадическими значениями
+  version: 1.0.0
+servers:
+  - url: http://sporadic/api/v1
+tags:
+  - name: Спорадические ряды
+  - name: Спорадические значения
+
+paths:
+  /values:
+    get:
+      tags:
+        - Спорадические значения
+      summary: Получить спорадические значения
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          description: Список GUID спорадических занчений, разделенный запятыми
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+      responses:
+        '200':
+          description: Список спорадических значений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSporadicValuesResponse'
+
+    post:
+      tags:
+        - Спорадические значения
+      summary: Создать спорадическое значение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSporadicValueRequest'
+      responses:
+        '201':
+          description: Спорадическое значение создано
+          
+    delete:
+      tags:
+        - Спорадические значения
+      summary: Удалить спорадическое значение
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: GUID спорадического значения для удаления
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Спорадическое значение удалено
+
+  /values/batch:
+    post:
+      tags:
+        - Спорадические значения
+      summary: Создать несколько спорадических значений
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSporadicValuesInBatchRequest'
+      responses:
+        '201':
+          description: Спорадические значения созданы
+
+  /values/last:
+    get:
+      tags:
+        - Спорадические значения
+      summary: Получить ближайшие прошедшие значения для нескольких спорадических рядов к указанной дате
+      parameters:
+        - name: seriesIds
+          in: query
+          required: false
+          description: Список GUID спорадических рядов, разделенный запятыми
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+        - name: date
+          in: query
+          required: true
+          description: Дата, для которой необходимо получить значения
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Список ближайших в прошлом спорадических значений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLastSporadicValuesResponse'
+
+  /values/range:
+    get:
+      tags:
+        - Спорадические значения
+      summary: Получить спорадические значения в указанном диапазоне времени
+      parameters:
+        - name: dataSeriesId
+          in: query
+          required: true
+          description: GUID спорадического ряда данных
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: true
+          description: Начальная дата для диапазона
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          description: Конечная дата для диапазона
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Список спорадических значений в указанном диапазоне времени
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSporadicValuesInRangeResponse'
+
+  /values/previous:
+    get:
+      tags:
+        - Спорадические значения
+      summary: Получить указанное количество предшествующих спорадических значений по дате
+      parameters:
+        - name: dataSeriesId
+          in: query
+          required: true
+          description: GUID спорадического ряда данных
+          schema:
+            type: string
+            format: uuid
+        - name: date
+          in: query
+          required: true
+          description: Дата, для которой нужно получить предшествующие значения
+          schema:
+            type: string
+            format: date-time
+        - name: count
+          in: query
+          required: true
+          description: Количество предшествующих спорадических значений для получения
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Список предшествующих спорадических значений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPreviousSporadicValuesResponse'
+  
+  /series:
+    get:
+      tags:
+        - Спорадические ряды
+      summary: Получить все спорадические ряды
+      responses:
+        '200':
+          description: Сведения о спорадических рядах данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllSporadicSeriesResponse'
+
+  /series/parameter/{parameterId}:
+    get:
+      tags:
+        - Спорадические ряды
+      summary: Получить ИЛИ СОЗДАТЬ спорадический ряд по идентификатору параметра объекта и идентификатору аналитики
+      parameters:
+        - name: parameterId
+          in: path
+          required: true
+          description: Идентификатор параметра объекта
+          schema:
+            type: string
+            format: uuid
+        - name: analyticsId
+          in: query
+          description: Идентификатор аналитики (По умолчанию "Факт")
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Сведения о спорадическом ряде данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSporadicSeriesResponse'
+  /series/{seriesId}:
+    get:
+      tags:
+        - Спорадические ряды
+      summary: Получить спорадический ряд по идентификатору параметра объекта и идентификатору аналитики
+      parameters:
+        - name: seriesId
+          required: true
+          in: path
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Сведения о спорадическом ряде данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSporadicSeriesResponse'
+
+components:
+  schemas:
+    SporadicValueDto:
+      type: object
+      properties:
+        sporadicSeriesId:
+          type: string
+          format: uuid
+          description: GUID спорадического ряда данных
+        timestamp:
+          type: string
+          format: date-time
+          description: Временная метка спорадического значения
+        nextValueTimestamp:
+          type: string
+          format: date-time
+          description: Временная метка следующего спорадического значения на ряде
+        numericValue:
+          $ref: '#/components/schemas/NumericValueDto'
+        referenceValue:
+          $ref: '#/components/schemas/ReferenceValueDto'
+        dateValue:
+          type: string
+          format: date-time
+        stringValue:
+          type: string
+        authorId:
+          type: string
+          format: uuid
+          description: GUID автора
+        lastModified:
+          type: string
+          format: date-time
+          description: Дата последнего изменения
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата создания
+        version:
+          type: integer
+          description: Номер версии
+        changeReason:
+          type: string
+          description: Причина изменения
+
+    CreateSporadicValueDto:
+      type: object
+      properties:
+        sporadicSeriesId:
+          type: string
+          format: uuid
+          description: GUID спорадического ряда данных
+        timestamp:
+          type: string
+          format: date-time
+          description: Временная метка спорадического значения
+        numericValue:
+          $ref: '#/components/schemas/NumericValueDto'
+        referenceValue:
+          $ref: '#/components/schemas/ReferenceValueDto'
+        dateValue:
+          type: string
+          format: date-time
+        stringValue:
+          type: string
+        changeReason:
+          type: string
+          description: Причина изменения
+
+    NumericValueDto:
+      type: object
+      properties:
+        value:
+          type: number
+        unit_id:
+          type: string
+          format: uuid
+
+    ReferenceValueDto:
+      type: object
+      properties:
+        referenceId:
+          type: string
+          format: uuid
+        referenceValueId:
+          type: string
+          format: uuid
+
+    CreateSporadicValueRequest:
+      $ref: '#/components/schemas/CreateSporadicValueDto'
+
+    CreateSporadicValuesInBatchRequest:
+      type: array
+      items:
+        $ref: '#/components/schemas/CreateSporadicValueDto'
+
+    GetSporadicValuesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/SporadicValueDto'
+
+    GetLastSporadicValuesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/SporadicValueDto'
+    
+    GetSporadicValuesInRangeResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/SporadicValueDto'
+
+    GetPreviousSporadicValuesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/SporadicValueDto'
+
+    SporadicSeriesDto:
+      type: object
+      properties:
+        seriesId:
+          type: string
+          format: uuid
+          description: Идентификатор спорадического ряда данных
+        parameterId:
+          type: string
+          format: uuid
+          description: Идентификатор параметра объекта
+        analyticsId:
+          type: string
+          format: uuid
+          description: Идентификатор аналитики
+        valueType:
+          type: string
+          enum: [string, reference, numeric, date]
+          description: Тип значений в ряде
+        measurementUnitId:
+          type: string
+          format: uuid
+          description: Единицы измерения для числовых типов
+        referenceId:
+          type: string
+          format: uuid
+          description: Идентификатор справочника для ссылочных типов
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата создания
+
+    GetSporadicSeriesResponse:
+      $ref: '#/components/schemas/SporadicSeriesDto' 
+    
+    GetAllSporadicSeriesResponse:
+      type: array
+      items:
+         $ref: '#/components/schemas/SporadicSeriesDto' 
