@@ -1,0 +1,76 @@
+
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:p1="http://inform.gazprom.ru/I/ISKAO/Kporuch" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" name="KporuchIn" targetNamespace="http://inform.gazprom.ru/I/ISKAO/Kporuch">
+   <wsdl:documentation />
+   <wsp:UsingPolicy wsdl:required="true" />
+   <wsp:Policy wsu:Id="OP_KporuchReceiverAsync" />
+   <wsdl:types>
+      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://inform.gazprom.ru/I/ISKAO/Kporuch" targetNamespace="http://inform.gazprom.ru/I/ISKAO/Kporuch">
+         <xsd:element name="Kporuch" type="Kporuch" />
+         <xsd:complexType name="Kporuch">
+            <xsd:sequence>
+               <xsd:element name="Record" maxOccurs="unbounded">
+                  <xsd:complexType>
+                     <xsd:sequence>
+                        <xsd:element name="Code" type="xsd:string">
+                           <xsd:annotation>
+                              <xsd:documentation>
+                              Идентификатор
+                              </xsd:documentation>
+                           </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="Name" type="xsd:string">
+                           <xsd:annotation>
+                              <xsd:documentation>
+                              Имя
+                              </xsd:documentation>
+                           </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element name="RecordStatus" minOccurs="0">
+                           <xsd:annotation>
+                              <xsd:documentation>
+                              Статус записи
+                              </xsd:documentation>
+                           </xsd:annotation>
+                           <xsd:complexType>
+                              <xsd:sequence>
+                                 <xsd:element name="SendDate" type="xsd:string">
+                                    <xsd:annotation>
+                                       <xsd:documentation>
+                                       Дата передачи
+                                       </xsd:documentation>
+                                    </xsd:annotation>
+                                 </xsd:element>
+                              </xsd:sequence>
+                           </xsd:complexType>
+                        </xsd:element>
+                     </xsd:sequence>
+                  </xsd:complexType>
+               </xsd:element>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:schema>
+   </wsdl:types>
+   <wsdl:message name="Kporuch">
+      <wsdl:documentation />
+      <wsdl:part name="Kporuch" element="p1:Kporuch" />
+   </wsdl:message>
+   <wsdl:portType name="KporuchIn">
+      <wsdl:documentation />
+      <wsdl:operation name="KporuchReceiverAsync">
+         <wsdl:documentation />
+         <wsp:Policy>
+            <wsp:PolicyReference URI="#OP_KporuchReceiverAsync" />
+         </wsp:Policy>
+         <wsdl:input message="p1:Kporuch" />
+      </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:binding name="KporuchInBinding" type="p1:KporuchIn">
+      <soap:binding xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="KporuchReceiverAsync">
+         <soap:operation xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" soapAction="http://sap.com/xi/WebService/soap1.1" />
+         <wsdl:input>
+            <soap:body xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+   </wsdl:binding>
+</wsdl:definitions>
